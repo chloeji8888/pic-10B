@@ -1,0 +1,132 @@
+#include "VectorString.hpp"
+#include <memory>
+#include<string>
+
+using namespace std;
+using namespace pic10b;
+
+//Default constructor
+VectorString::VectorString():vec_size(0), vec_capacity(1), Array(make_unique<string[]>(vec_capacity)){}
+
+//Size constructor
+VectorString::VectorString(size_t vecSize):vec_size(vecSize), vec_capacity(2 * vecSize), Array(make_unique<string[]>(vec_capacity)){}
+
+//Constructor that replace elements in the Array to strings
+VectorString::VectorString(size_t size, string String):vec_size(size), vec_capacity(2 * size), Array(make_unique<string[]>(vec_capacity)){
+    for(int i = 0; i < vec_capacity; ++i){
+        Array[i] = String;
+    }
+}
+
+//Copy constructor accepting an object
+VectorString::VectorString(const VectorString& copyArray): vec_size(copyArray.vec_size),vec_capacity(copyArray.vec_capacity),Array(make_unique<string[]>(copyArray.vec_capacity)) {
+    for(size_t i = 0; i < copyArray.vec_capacity; ++i){
+        Array[i] = copyArray.Array[i];
+        // Assign each element in the Array of copyArray to the originial one
+    }
+}
+
+VectorString& VectorString::operator = (const VectorString& copyVec){
+
+    if(this == &copyVec){// if the pointer to the original class is equal to copyVec
+        return *this;// means that the two arrays are the same, so return the Array
+    }else{
+        Array = std::make_unique<std::string[]>(copyVec.vec_capacity);
+        //assign a new capacity to the Array
+        for(size_t i = 0; i < copyVec.vec_capacity; ++i){
+            Array[i] = copyVec.Array[i];// deep copy each elements from the copyVec to the Array
+        }
+    }
+    vec_size = copyVec.vec_size;//reassign size
+    vec_capacity = copyVec.vec_capacity;//reassign capacity
+    return *this;//return reference to the new Array class
+
+}
+
+//move constructor accepting a xvalue object
+VectorString::VectorString(VectorString&& moveVec): VectorString(){
+    swap(Array, moveVec.Array);// swap the two Arrays
+    swap(vec_size, moveVec.vec_size);//swap the sizes
+    swap(vec_capacity, moveVec.vec_capacity);//swap the capacity
+    
+}
+
+VectorString& VectorString::operator = (VectorString&& moveVec){
+    std::swap(Array, moveVec.Array);//swap the two Arrays
+    std::swap(vec_size, moveVec.vec_size);//swap the sizes
+    std::swap(vec_capacity, moveVec.vec_capacity);//swap the capcity
+    return *this;//return the reference to the new array class}
+}
+
+
+
+size_t VectorString::size()const{
+    return vec_size; // return the size of the Array
+}
+
+size_t VectorString::capacity()const{
+    return vec_capacity;//return the capacity of the Array
+}
+
+void VectorString::push_back(const string& addString){
+    if(vec_size < vec_capacity){//if the size is less than the capacity
+        Array[vec_size] = addString;// add the string at the end
+    }else{// if the size is greater than or equal to the capacity
+        vec_capacity *= 2;//double the capacity
+        unique_ptr<string[]> newArray = make_unique<string[]>(vec_capacity);
+        // assign a new pointer to the string[] with the new capacity
+        swap(Array, newArray);
+        // swap the original Array witht the new one, which makes the Array pointer having the empty new capcity string[]
+        for(int i = 0; i < vec_size; ++i){
+            Array[i] = newArray[i]; // put back the orinigal values into the Array pointer string[]
+        }
+    }
+    Array[vec_size] = addString;// add the new string at the end
+    ++vec_size;// increment the size
+}
+
+void VectorString::pop_back(){
+    Array[vec_size]  = "";// make the end of the string[] empty
+    --vec_size;//decrement the size
+}
+
+void VectorString::deleteAt(const size_t& index){
+    for(size_t j = index; j < vec_size - 1; ++j){
+        Array[j] = Array[j+1];// start from the index position, move eveny elements behind it backward one position
+    }
+    --vec_size;// decrement the size
+}
+
+void VectorString::insertAt(const size_t& index, const std::string& String){
+    if(vec_size < vec_capacity){//if the size is less than the capacity
+        for(size_t j = vec_size ; j > index; --j){// start from the end of the Array's position to the index position
+         Array[j] = Array[j - 1];//move every elements forward
+        }
+    }else{// if the size is greater than or equal to the capacity
+        vec_capacity *= 2;// double the capacity
+        unique_ptr<string[]> newArray = make_unique<string[]>(vec_capacity);//assign a new pointer with a new capacity
+        swap(Array, newArray);// swap the two arrays to make the original one an emtpy string[] with new capacity and the newArray has the orinial emements with old camplacity
+        for(size_t i = 0; i < index; ++i){
+            Array[i] = newArray[i];//put back the orinigal values up to the index position into the Array pointer string[]
+        }
+        
+        for(size_t j = index; j < vec_size; ++j){
+            Array[j + 1] = newArray[j]; // put the rest of the original value from the index to the end of the size back to the Array
+        }
+    }
+    Array[index] = String;
+    ++vec_size;
+}
+
+
+string& VectorString::at(const size_t& index){
+    return Array[index];
+}
+
+string& VectorString::at(const size_t& index)const{
+    return Array[index];
+}
+
+
+
+
