@@ -1,0 +1,108 @@
+#include "SpellCheck.hpp"
+#include <iostream>
+#include<unordered_set>
+#include<fstream>
+#include<string>
+
+using namespace std;
+
+SpellCheck::SpellCheck(){
+    /*empty*/
+}
+
+bool is_white_space(const char letter){
+    if(letter == ' ' || letter == '\r' || letter == '\t' || letter == '\n'||letter == '\v'){//if there is a white space return true
+        return true;
+    }else{//else return false
+        return false;
+    }
+
+}
+
+bool final_punctuation (const string curWord){
+    string endOfWord = curWord.substr(curWord.length() - 1, 1);
+    // get the string of the end fo the string
+    
+    if(endOfWord == "." || endOfWord == ","||endOfWord == "!"||endOfWord =="?"||endOfWord == ";"|| endOfWord == ":"){//if the last string of the string is one of those characters, return true
+        return true;
+    }else{//else return false
+        return false;
+    }
+
+}
+
+void depunctuate(string& upper){
+    //make first character of the word lowercase
+    if ( ('A' <= upper[0]) && (upper[0] <= 'Z') )
+        upper[0] += ('a' - 'A');
+
+    //remove the final punctuation mark if there is one
+    if (final_punctuation(upper))
+        upper.erase(upper.length()-1,1);
+
+}
+
+void SpellCheck::read_dictionary(const string& dicName){
+    dictionary.open(dicName); // open the file
+    
+    if(dictionary.fail()){// if can not open the file, print out the error message
+        cout << "Erro opening the dictionary";
+    }
+    
+    while(dictionary >> dicWord ){//store words in dictionary file into dicword
+        dicSet.insert(dicWord);// insert those words into the set
+    }
+    
+    dictionary.close();//close file
+}
+
+bool SpellCheck::is_valid (string &currentWord)const{
+    
+    if( dicSet.find(currentWord) != dicSet.end() )  // if element was found in the set return true
+        return true;
+    else
+        return false;
+}
+
+
+void SpellCheck::process_file(string& inputFile){
+
+    ifstream file;
+    file.open(inputFile);//store inputFile in file
+    if(file.fail()){//if file can not open print the error message
+        cout << "Error Opening the File " << inputFile << "\n";
+    }
+    
+    char whiteSpace;
+    string realOutput;
+    string Words;
+    string depunc;
+    
+    while(file.peek() != EOF){
+        
+        if(is_white_space(file.peek())){//check if there is a white space
+            whiteSpace = file.get();//if there is a white space, get the white space
+            realOutPut += whiteSpace;// and add it to the output
+        }else{// if there is not a white space
+            file >> Words;// store words into Words
+            depunc = Words;// make depunc equal to words
+            depunctuate(depunc);// process the words
+            
+            if(!is_valid(depunc)){//if the processed words is not correct
+                Words.insert(0, "*");//put an aski before the words
+                if(final_punctuation(Words)){//if there is a final punctuation after the words
+                    Words.insert(Words.length() - 1, "*");// put the aski before the punctuation
+                }
+                if(!final_punctuation(Words)){//if there is no final punctuation
+                    Words.insert(Words.length(), "*");//put the aski after the words
+                }
+            }
+            
+            realOutPut += Words;// if the processed words is valid, add it to the output
+        }
+    }
+    cout << realOutPut;//print out the output
+    
+    file.close();//close the file.
+}
+
