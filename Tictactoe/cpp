@@ -1,0 +1,24 @@
+#include "Tictactoe.hpp"
+#include<string>
+
+using namespace std;
+
+Player::Player(const std::string& _name, const int& _score): name(_name), score(_score){
+    /*empty*/
+}
+
+int Player::get_score()const{
+    return score;// return the score of the player
+}
+
+string Player::get_name()const{
+    return name;//return the name of the player
+}
+
+void Player::add_score(){
+    score++; //increments the score of the player
+}
+
+
+
+
